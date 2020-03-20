@@ -20,5 +20,9 @@
   "bugs": {
     "url": "https://github.com/chrizzzly87/justone/issues"
   },
-  "homepage": "https://github.com/chrizzzly87/justone#readme"
+  "homepage": "https://github.com/chrizzzly87/justone#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^2.3.0"
+  }
 }
