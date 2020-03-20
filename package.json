@@ -1,0 +1,24 @@
+{
+  "name": "justone",
+  "version": "0.0.1",
+  "description": "just one online multiplayer game",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chrizzzly87/justone.git"
+  },
+  "keywords": [
+    "just",
+    "one",
+    "socket"
+  ],
+  "author": "Christian Wisniewski",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chrizzzly87/justone/issues"
+  },
+  "homepage": "https://github.com/chrizzzly87/justone#readme"
+}
