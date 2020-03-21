@@ -21,7 +21,7 @@ let totalPlayer = players.length;
 
 io.on('connection', function (socket) {
     console.log('socket io connection started...');
-    socket.emit('currentlyOnline', { online: totalPlayer });
+    socket.emit('currentlyOnline', totalPlayer);
     socket.on('joinGame', player => {
         console.log('Player joining the lobby', player);
 
@@ -35,8 +35,8 @@ io.on('connection', function (socket) {
             players.push(player);
             totalPlayer = players.length;
             socket.emit('checkLogin',true);
-            socket.emit('currentlyOnline', { online: totalPlayer });
-            socket.emit('allPlayers', { players: players });
+            socket.emit('currentlyOnline', totalPlayer);
+            socket.emit('allPlayers', players);
         }
     });
 });

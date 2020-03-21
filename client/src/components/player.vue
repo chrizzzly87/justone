@@ -55,15 +55,15 @@
             this.socket = io('http://localhost:8000');
         },
         mounted() {
-            this.socket.on('currentlyOnline', res => {
+            this.socket.on('currentlyOnline', totalOnline => {
                 console.log('=> callback for currentlyOnline');
-                console.log(res);
-                this.totalPlayers = res.online;
+                console.log(totalOnline);
+                this.totalPlayers = totalOnline;
             });
-            this.socket.on('allPlayers', res => {
+            this.socket.on('allPlayers', players => {
                 console.log('=> callback for allPlayers');
-                console.log(res);
-                this.allPlayers = res.players;
+                console.log(players);
+                this.allPlayers = players;
             });
             this.socket.on('checkLogin', login => {
               console.log('checklogin');
