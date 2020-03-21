@@ -23,15 +23,13 @@ io.on('connection', function (socket) {
     console.log('socket io connection started...');
     socket.emit('currentlyOnline', totalPlayer);
     socket.on('joinGame', player => {
-        console.log('Player joining the lobby', player);
+        console.log('\x1b[37mPlayer joining the lobby: \x1b[36m%s\x1b[37m', player);
 
         if (players.includes(player)) {
             // name already taken
-            console.log('Name already taken');
+            console.log('\x1b[31mName already taken');
             socket.emit('checkLogin',false);
         } else {
-            console.log('Adding new Player');
-
             players.push(player);
             totalPlayer = players.length;
             socket.emit('checkLogin',true);
