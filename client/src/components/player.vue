@@ -20,7 +20,7 @@
             }
         },
         methods: {
-            click() {
+            addPlayer() {
               this.socket.emit('addPlayer', 1);
             }
         },

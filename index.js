@@ -1,29 +1,31 @@
-const express = require('express');
-const http = require('http').Server(express);
-const allowedOrigins = "http://localhost:* http://127.0.0.1:*";
-const socketio = require('socket.io')(http, {origins: allowedOrigins, transport: ['websocket']});
-const path = require('path');
+var app = require('express')();
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
 
-
-
-const app = express();
 const port = process.env.PORT || '8000';
+
+server.listen(port);
+
+app.use(function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*'); 
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
+
+app.get('/', function (req, res) {
+    res.status(200).send('Running JustOne Server');
+
+});
 
 let totalPlayer = 1;
 
-socketio.on('connection', socket => {
-    socket.emit('players', totalPlayers);
+io.on('connection', function (socket) {
+    console.log('socket io connection started...');
+    socket.emit('news', { hello: 'world' });
+    console.log('emitting hello world...');
     socket.on('addPlayer', player => {
-        console.log('getting new player info');
+        console.log('getting new player info', addPlayer);
         totalPlayer += player;
     });
-});
-
-app.get('/', (req, res) => {
-    res.status(200).send('Running JustOne Server');
-});
-
-app.listen(port, () => {
-    console.log(`Listening to requests on http://localhost:${port}`);
 });
 
