@@ -3,7 +3,7 @@
         <section>
         <h1>Just One Lobby</h1>
         <p>
-            ({{ allPlayers.length }} players online)
+            ({{ totalPlayers }} players online)
             <template v-if="allPlayers.length">
                 <ul>
                     <li v-for="name in allPlayers" :key="name">
@@ -50,6 +50,7 @@
                 data: {},
                 playerName: '',
                 allPlayers: [],
+                totalPlayers: 0,
                 joined: false,
                 nameTaken: false,
                 
@@ -69,14 +70,15 @@
             this.socket.on('allPlayers', players => {
                 console.log('=> callback for allPlayers');
                 console.log(players);
-                this.allPlayers = players;
+                this.allPlayers = players; // not updating though
+                this.totalPlayers = this.allPlayers.length;
             });
             this.socket.on('checkLogin', login => {
                 console.log('=> callback for checklogin');
                 console.log(login);
                 this.nameTaken = !login;
                 if (login) {
-                this.joined = true;
+                    this.joined = true;
                 }
             });
             this.socket.on('server_msg', msg => {
@@ -86,7 +88,8 @@
             this.socket.on('broadcast', data => {
                 console.log('=> callback for broadcast');
                 console.log(data);
-                this.allPlayers = data.allPlayers;
+                this.allPlayers = data.allPlayers; // not updating though
+                this.totalPlayers = this.allPlayers.length;
             });
         },
     };

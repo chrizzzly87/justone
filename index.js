@@ -43,8 +43,8 @@ io.on('connection', function (socket) {
         } else {
             players.push(player);
             socket.emit('checkLogin',true);
-            socket.broadcast.emit('allPlayers', players);
-            socket.emit('broadcast', players);
+            // socket.broadcast.emit('allPlayers', players);
+            socket.emit('broadcast', {allPlayers: players});
             currentPlayer = player;
             socket.broadcast.emit('server_msg', `${player} joined the lobby.`);
         }
@@ -55,8 +55,8 @@ io.on('connection', function (socket) {
             console.log('\x1b[31m%s - player disconnected \x1b[37m', currentPlayer);
             players.splice(index,1);
 
-            socket.broadcast.emit('allPlayers', players);
-            socket.emit('broadcast', players);
+            // socket.broadcast.emit('allPlayers', players);
+            socket.emit('broadcast', {allPlayers: players});
             socket.broadcast.emit('server_msg', `${currentPlayer} left the lobby.`);
         }
     });
