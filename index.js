@@ -24,10 +24,19 @@ io.on('connection', function (socket) {
     socket.emit('currentlyOnline', { online: totalPlayer });
     socket.on('joinGame', player => {
         console.log('Player joining the lobby', player);
-        players.push(player);
-        totalPlayer = players.length;
 
-        socket.emit('currentlyOnline', { online: totalPlayer });
-        socket.emit('allPlayers', { players: players });
+        if (players.includes(player)) {
+            // name already taken
+            console.log('Name already taken');
+            socket.emit('checkLogin',false);
+        } else {
+            console.log('Adding new Player');
+
+            players.push(player);
+            totalPlayer = players.length;
+            socket.emit('checkLogin',true);
+            socket.emit('currentlyOnline', { online: totalPlayer });
+            socket.emit('allPlayers', { players: players });
+        }
     });
 });

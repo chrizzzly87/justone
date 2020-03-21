@@ -12,10 +12,18 @@
             </template>
         </p>
 
-        <div>
+        <div v-if="joined === false">
             <input type="text" v-model="playerName" placeholder="Playername"/>
             <button @click="joinGame">Join lobby</button>
+
+            <template v-if="nameTaken">
+              Sorry, but this name is already taken. Choose another one!
+            </template>
         </div> 
+        <div v-else>
+            <h4>Congratulations, {{ playerName }}.</h4>
+            You successfully joined the Server. Wait for other players to start the game :)
+        </div>
     </div>
 </template>
 
@@ -33,6 +41,8 @@
                 playerName: '',
                 totalPlayers: 0,
                 allPlayers: [],
+                joined: false,
+                nameTaken: false,
             }
         },
         methods: {
@@ -54,6 +64,14 @@
                 console.log('=> callback for allPlayers');
                 console.log(res);
                 this.allPlayers = res.players;
+            });
+            this.socket.on('checkLogin', login => {
+              console.log('checklogin');
+              console.log(login);
+                this.nameTaken = !login;
+                if (login) {
+                  this.joined = true;
+                }
             });
         }
     }
