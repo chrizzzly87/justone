@@ -67,12 +67,6 @@
             console.log('=== CLIENT SOCKET RUNNING ===');
         },
         mounted() {
-            this.socket.on('allPlayers', players => {
-                console.log('=> callback for allPlayers');
-                console.log(players);
-                this.allPlayers = players; // not updating though
-                this.totalPlayers = this.allPlayers.length;
-            });
             this.socket.on('checkLogin', login => {
                 console.log('=> callback for checklogin');
                 console.log(login);
@@ -89,7 +83,7 @@
                 console.log('=> callback for broadcast');
                 console.log(data);
                 this.allPlayers = data.allPlayers; // not updating though
-                this.totalPlayers = this.allPlayers.length;
+                this.totalPlayers = data.allPlayers.length;
             });
         },
     };

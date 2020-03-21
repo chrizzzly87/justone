@@ -21,18 +21,18 @@ app.get('/', function (req, res) {
 });
 
 let players = [];
-let currentPlayer = null;
 
 /* FAQ
 
 io.sockets.emit will send to all the clients
-
 socket.broadcast.emit will send the message to all the other clients except the newly created connection
 
 */
 
 io.on('connection', function (socket) {
-    console.log('\x1b[37msocket io connection started...');
+    console.log('\x1b[37msocket io connection started... Send all player info');
+    socket.emit('broadcast', {allPlayers: players});
+
     socket.on('joinGame', player => {
         console.log('\x1b[37mPlayer joining the lobby: \x1b[36m%s\x1b[37m', player);
 
@@ -41,23 +41,26 @@ io.on('connection', function (socket) {
             console.log('\x1b[31m%s\x1b[37m - name already taken', player);
             socket.emit('checkLogin',false);
         } else {
+            // new player joining
+            socket.userName = player;
+
             players.push(player);
             socket.emit('checkLogin',true);
-            // socket.broadcast.emit('allPlayers', players);
+
+
             socket.emit('broadcast', {allPlayers: players});
-            currentPlayer = player;
             socket.broadcast.emit('server_msg', `${player} joined the lobby.`);
         }
     });
     socket.on('disconnect', function () {
-        let index = players.indexOf(currentPlayer);
+        console.log(socket.userName + ' tries to disconnect');
+        let index = players.indexOf(socket.userName);
         if (index > -1) {
-            console.log('\x1b[31m%s - player disconnected \x1b[37m', currentPlayer);
+            console.log('\x1b[31m%s - player disconnected \x1b[37m', socket.userName);
             players.splice(index,1);
 
-            // socket.broadcast.emit('allPlayers', players);
             socket.emit('broadcast', {allPlayers: players});
-            socket.broadcast.emit('server_msg', `${currentPlayer} left the lobby.`);
+            socket.broadcast.emit('server_msg', `${socket.userName} left the lobby.`);
         }
     });
 });
