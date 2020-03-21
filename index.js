@@ -1,13 +1,17 @@
-var app = require('express')();
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
+import createApplication from 'express';
+import { Server } from 'http';
+import socketIo from 'socket.io';
+
+const app = createApplication();
+const server = new Server(app);
+const io = socketIo(server);
 
 const port = process.env.PORT || '8000';
 
 server.listen(port);
 
-app.use(function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', '*'); 
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     next();
 });

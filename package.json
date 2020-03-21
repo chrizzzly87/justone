@@ -1,11 +1,12 @@
 {
   "name": "justone",
+  "type": "module",
   "version": "0.0.1",
   "description": "just one online multiplayer game",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "nodemon index.js & vue-cli-service serve && fg",
+    "serve": "nodemon --experimental-modules index.js & vue-cli-service serve && fg",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
