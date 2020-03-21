@@ -14,6 +14,7 @@ let totalPlayer = 1;
 socketio.on('connection', socket => {
     socket.emit('players', totalPlayers);
     socket.on('addPlayer', player => {
+        console.log('getting new player info');
         totalPlayer += player;
     });
 });
