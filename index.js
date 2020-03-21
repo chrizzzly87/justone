@@ -48,7 +48,7 @@ io.on('connection', function (socket) {
             socket.emit('checkLogin',true);
 
 
-            socket.emit('broadcast', {allPlayers: players});
+            socket.broadcast.emit('broadcast', {allPlayers: players});
             socket.broadcast.emit('server_msg', `${player} joined the lobby.`);
         }
     });
@@ -59,7 +59,7 @@ io.on('connection', function (socket) {
             console.log('\x1b[31m%s - player disconnected \x1b[37m', socket.userName);
             players.splice(index,1);
 
-            socket.emit('broadcast', {allPlayers: players});
+            socket.broadcast.emit('broadcast', {allPlayers: players});
             socket.broadcast.emit('server_msg', `${socket.userName} left the lobby.`);
         }
     });
