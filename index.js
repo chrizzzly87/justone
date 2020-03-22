@@ -35,7 +35,6 @@ socket.broadcast.emit will send the message to all the other clients except the 
 */
 
 io.on('connection', function (socket) {
-    console.log('\x1b[37msocket io connection started... Send all player info');
     let currentClient = {
         connected: Date.now(),
         id: Date.now(),
@@ -48,7 +47,9 @@ io.on('connection', function (socket) {
     this.socket = currentClient;
     let myIndex = clients.push(currentClient);
 
+    console.log('\x1b[37mNew client connected to socket. %s', currentClient.id);
     socket.emit('broadcast', {clients: clients});
+    socket.broadcast.emit('broadcast', {clients: clients});
 
     socket.on('joinGame', name => {
         console.log('\x1b[37mPlayer joining the lobby: \x1b[36m%s\x1b[37m', name);
