@@ -72,7 +72,69 @@
             </div>
         </div>
         <div class="column is-three-quarters" v-if="gameIsRunning == true">
-
+            <h1>Current GuessingPlayer: {{ currentPlayer.name }}</h1>
+            <div v-if="currentPhase === 'drawCard'">
+                <p v-if="currentPlayer.id == player.id">
+                    It's your turn, {{ player.name }}! Please select a card
+                </p>
+                card selection here
+            </div>
+            <div v-if="currentPhase === 'voteItem'">
+                
+                <p v-if="currentPlayer.id !== player.id">
+                    It's your turn, {{ player.name }}! 
+                    Please vote for an item that <strong>{{ currentPlayer.name }}</strong> has to guess
+                </p>
+                Item selection here
+            </div>
+            <div v-if="currentPhase === 'writeHint'">
+                
+                <p v-if="currentPlayer.id !== player.id">
+                    It's your turn, {{ player.name }}! 
+                    Please write down <strong>JUST ONE</strong> word to help {{currentPlayer.name}}
+                </p>
+                <div class="field has-addons">
+                    <div class="control has-icons-left ">
+                        <input class="input" type="text" placeholder="Enter your hint">
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-user"></i>
+                        </span>
+                    </div>
+                    <div class="control">
+                        <button class="button is-link ">
+                            Enter
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div v-if="currentPhase === 'checkHints'">
+                
+                <p v-if="currentPlayer.id !== player.id">
+                    It's your turn, {{ player.name }}! 
+                    Please check all hints and select the duplicates that should be <strong>removed</strong>
+                </p>
+                Hint selection here
+            </div>
+            <div v-if="currentPhase === 'guessWord'">
+                
+                <p v-if="currentPlayer.id == player.id">
+                    It's your turn, {{ player.name }}! 
+                    Guess the word! Here are your hints
+                </p>
+                <div class="field has-addons">
+                    <div class="control has-icons-left ">
+                        <input class="input" type="text" placeholder="Enter your guess">
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-user"></i>
+                        </span>
+                    </div>
+                    <div class="control">
+                        <button class="button is-link ">
+                            Enter
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
         <aside class="column has-background-light">
             <div>
@@ -120,6 +182,16 @@
     import io from 'socket.io-client';
     import { toast } from 'bulma-toast';
 
+    const GAME_PHASE = [
+        'idle',
+        'drawCard', // active player
+        'voteItem', // others need to choose item
+        'writeHint', // others
+        'checkHints', // others
+        'guessWord', // active player
+        'vote' // others
+    ];
+
     export default {
         name: 'Player',
         props: {
@@ -128,8 +200,8 @@
         data() {
             return {
                 socket: {},
+                id: null,
                 serverMessages: [],
-                data: {},
                 playerName: '',
                 client: '',
                 clients: [],
@@ -143,6 +215,8 @@
                 msg: '',
                 minPlayers: 1,
                 gameIsRunning: false,
+                currentPhase: GAME_PHASE[0],
+                currentPlayer: {},
             }
         },
         computed: {
@@ -151,6 +225,9 @@
             },
             readyPlayers() {
                 return this.players.filter(client => client.ready === true);
+            },
+            player() {
+                return this.clients.find(client => client.id === this.id);
             },
         },
         methods: {
@@ -200,6 +277,10 @@
                 console.log('=> server msg');
                 this.serverMessages.push(msg);
             });
+            this.socket.on('client', player => {
+                console.log('=> callback: client info');
+                this.player = player;
+            });
             this.socket.on('broadcast', data => {
                 console.log('=> callback for broadcast');
                 console.log(data);
@@ -218,9 +299,15 @@
             });
             this.socket.on('start', started => {
                 console.log('======> game started %s', started);
-                if (this.ready) {
-                    this.gameIsRunning = started;
-                }
+                this.gameIsRunning = started;
+                this.currentPhase = GAME_PHASE[1];
+            });
+            this.socket.on('currentPlayer', player => {
+                console.log('Current player is %s', player.name);
+                this.currentPlayer = player;
+            });
+            this.socket.on('connect', () => {
+                this.id = this.socket.id;
             });
         },
     };

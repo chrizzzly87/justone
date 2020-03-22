@@ -20,12 +20,10 @@ app.get('/', function (req, res) {
     res.status(200).send('Running JustOne Server');
 });
 
-let players = [];
-let ready = [];
-
 // better: store all clients in global array as objects
 // client -> connected (tstamp), id (internal use), name (as given by input), ready (bool), playing (bool), points, idLobby ??
 let clients = [];
+let currentPlayer = null;
 
 /* FAQ
 
@@ -44,13 +42,12 @@ io.on('connection', function (socket) {
         entered: false,
         points: 0,
     };
-    this.socket = currentClient;
-    let myIndex = clients.push(currentClient);
+    
+    clients.push(currentClient);
 
     console.log('\x1b[37mNew client connected to socket. %s', currentClient.id);
     socket.emit('broadcast', {clients: clients});
     socket.broadcast.emit('broadcast', {clients: clients});
-
     socket.on('joinGame', name => {
         console.log('\x1b[37mPlayer joining the lobby: \x1b[36m%s\x1b[37m', name);
         if (clients.filter(client => client.name === name).length > 0) {
@@ -61,18 +58,20 @@ io.on('connection', function (socket) {
             // new player joining
             currentClient.name = name;
             currentClient.entered = true;
-            // clients.push(player);
             socket.emit('checkLogin',true);
 
             socket.emit('broadcast', {clients: clients});
             socket.emit('server_msg', `${name} joined the lobby.`);
             socket.broadcast.emit('broadcast',{clients: clients});
             socket.broadcast.emit('server_msg', `${name} joined the lobby.`);
+
+            // emit to player his own details!!
+            console.log('\x1b[32mSending client info to %s\x1b[37m', currentClient.id);
+            socket.broadcast.to(currentClient.id).emit('client', currentClient);
+            socket.to(currentClient.id).emit('client', currentClient);
         }
     });
     socket.on('ready', player => {
-        // ready.push(player);
-        // socket.emit('readyPlayers', ready);
         currentClient.ready = player.ready;
         socket.emit('broadcast', {clients: clients});
         socket.broadcast.emit('broadcast',{clients: clients});
@@ -108,6 +107,12 @@ io.on('connection', function (socket) {
         console.log('Game started for ready players');
         
         socket.emit('start', true);
+
+        // set current player
+        currentPlayer = readyPlayers[Math.floor(Math.random() * readyPlayers.length)];
+        socket.broadcast.emit('currentPlayer', currentPlayer);
         socket.broadcast.emit('start', true);
+        socket.emit('currentPlayer', currentPlayer);
+        socket.emit('start', true);
     });
 });
