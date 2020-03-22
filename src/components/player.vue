@@ -45,6 +45,25 @@
                 <div class="notification" v-if="totalPlayers < 2">
                     <p>Waiting for at least 2 players</p>
                 </div>
+
+                <div class="field has-addons">
+                    <div class="control has-icons-left ">
+                        <input class="input" type="text" placeholder="Chat with the others" v-model="msg" >
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-user"></i>
+                        </span>
+                    </div>
+                    <div class="control">
+                        <button class="button is-link " @click="sendMsg">
+                            <span class="icon">
+                                <i class="fa fa-paper-plane"></i>
+                            </span>
+                            <span>
+                                Send message
+                            </span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         <aside class="column has-background-light">
@@ -76,6 +95,15 @@
                     </li>
                 </ul>
             </div>
+            <div class="chat">
+                <div class="textarea">
+                    <ul>
+                        <li v-for="(item, index) in chat" :key="index">
+                            {{ item.name }}: {{item.msg }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </aside>
     </div>
 </template>
@@ -104,6 +132,8 @@
                 joined: false,
                 nameTaken: false,
                 ready: false,
+                chat: [],
+                msg: '',
             }
         },
         computed: {
@@ -115,6 +145,11 @@
             joinGame() {
                 console.log('=> emitting join game with: ' + this.playerName);
                 this.socket.emit('joinGame', this.playerName);
+            },
+            sendMsg() {
+                console.log('=> sending message: ' + this.msg);
+                this.socket.emit('chat', {name: this.playerName, msg: this.msg});
+                this.msg = '';
             },
         },
         watch: {
@@ -160,6 +195,10 @@
                     }
                 });
                 this.totalPlayers = this.clients.filter(client => client.entered === true).length;
+            });
+            this.socket.on('chat', chatObj => {
+                console.log('=> chat msg');
+                this.chat.push(chatObj);
             });
         },
     };

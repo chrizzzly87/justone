@@ -97,4 +97,9 @@ io.on('connection', function (socket) {
             }  
         }
     });
+    socket.on('chat', chatObj => {
+        console.log('= Chat msg from %s: %s', chatObj.name, chatObj.msg);
+        socket.emit('chat', chatObj);
+        socket.broadcast.emit('chat', chatObj);
+    });
 });
