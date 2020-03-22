@@ -23,6 +23,10 @@ app.get('/', function (req, res) {
 let players = [];
 let ready = [];
 
+// better: store all clients in global array as objects
+// client -> connected (tstamp), id (internal use), name (as given by input), ready (bool), playing (bool), idLobby ??
+let clients = [];
+
 /* FAQ
 
 io.sockets.emit will send to all the clients
@@ -49,7 +53,7 @@ io.on('connection', function (socket) {
             socket.emit('checkLogin',true);
 
             socket.emit('broadcast', {allPlayers: players});
-            socket.broadcast.emit({allPlayers: players});
+            socket.broadcast.emit('broadcast',{allPlayers: players});
             socket.broadcast.emit('server_msg', `${player} joined the lobby.`);
         }
     });
@@ -64,7 +68,8 @@ io.on('connection', function (socket) {
             console.log('\x1b[31m%s - player disconnected \x1b[37m', socket.userName);
             players.splice(index,1);
 
-            socket.broadcast.emit('broadcast', {allPlayers: players});
+            socket.emit('broadcast', {allPlayers: players});
+            socket.broadcast.emit('broadcast',{allPlayers: players});
             socket.broadcast.emit('server_msg', `${socket.userName} left the lobby.`);
         }
     });

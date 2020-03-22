@@ -27,9 +27,9 @@
 
             <div>
                 <label>
-                    <input type="checkbox" v-model="ready" :disabled="totalPlayers < 4"> Ready for some fun
+                    <input type="checkbox" v-model="ready" :disabled="totalPlayers < 2"> Ready for some fun
                 </label>
-                <p v-if="totalPlayers < 4">Waiting for at least 4 players</p>
+                <p v-if="totalPlayers < 2">Waiting for at least 2 players</p>
             </div>
         </div>
         </section>
