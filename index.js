@@ -21,6 +21,7 @@ app.get('/', function (req, res) {
 });
 
 let players = [];
+let ready = [];
 
 /* FAQ
 
@@ -47,10 +48,14 @@ io.on('connection', function (socket) {
             players.push(player);
             socket.emit('checkLogin',true);
 
-
-            socket.broadcast.emit('broadcast', {allPlayers: players});
+            socket.emit('broadcast', {allPlayers: players});
+            socket.broadcast.emit({allPlayers: players});
             socket.broadcast.emit('server_msg', `${player} joined the lobby.`);
         }
+    });
+    socket.on('ready', player => {
+        ready.push(player);
+        socket.emit('readyPlayers', ready);
     });
     socket.on('disconnect', function () {
         console.log(socket.userName + ' tries to disconnect');

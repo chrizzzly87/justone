@@ -7,7 +7,7 @@
             <template v-if="allPlayers.length">
                 <ul>
                     <li v-for="name in allPlayers" :key="name">
-                        {{ name }}
+                        {{ name }} <span v-if="readyPlayers.includes(name)">(ready)</span>
                     </li>
                 </ul>
             </template>
@@ -24,6 +24,13 @@
         <div v-else>
             <h4>Congratulations, {{ playerName }}.</h4>
             You successfully joined the Server. Wait for other players to start the game :)
+
+            <div>
+                <label>
+                    <input type="checkbox" v-model="ready" :disabled="totalPlayers < 4"> Ready for some fun
+                </label>
+                <p v-if="totalPlayers < 4">Waiting for at least 4 players</p>
+            </div>
         </div>
         </section>
         <aside>
@@ -50,17 +57,24 @@
                 data: {},
                 playerName: '',
                 allPlayers: [],
+                readyPlayers: [],
                 totalPlayers: 0,
                 joined: false,
                 nameTaken: false,
-                
+                ready: false,
             }
         },
         methods: {
             joinGame() {
                 console.log('=> emitting join game with: ' + this.playerName);
                 this.socket.emit('joinGame', this.playerName);
-            }
+            },
+        },
+        watch: {
+            ready() {
+                console.log('=> playerReady: ' + this.playerName);
+                this.socket.emit('ready', this.playerName);
+            },
         },
         created() {
             this.socket = io('http://localhost:8000');
@@ -84,6 +98,11 @@
                 console.log(data);
                 this.allPlayers = data.allPlayers; // not updating though
                 this.totalPlayers = data.allPlayers.length;
+            });
+            this.socket.on('readyPlayers', readyPlayers => {
+                console.log('=> callback for ready');
+                console.log(readyPlayers);
+                this.readyPlayers = readyPlayers;
             });
         },
     };
