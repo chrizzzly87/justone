@@ -1,6 +1,6 @@
 <template>
     <div class="columns">
-        <div class="column is-three-quarters">
+        <div class="column is-three-quarters" v-if="gameIsRunning == false">
             <h1 class="title">Just One Lobby</h1>
             <div v-if="joined === false">
                 <p>
@@ -42,8 +42,13 @@
                             Ready for some fun
                     </label>
                 </div>
-                <div class="notification" v-if="totalPlayers < 2">
-                    <p>Waiting for at least 2 players</p>
+                <div class="notification">
+                    <p>
+                        Waiting for at least {{ minPlayers }} players to start the game
+                    </p>
+                    <button class="button is-link" 
+                        :disabled="readyPlayers.length < minPlayers"
+                        @click="startGame">Start game</button>
                 </div>
 
                 <div class="field has-addons">
@@ -66,6 +71,9 @@
                 </div>
             </div>
         </div>
+        <div class="column is-three-quarters" v-if="gameIsRunning == true">
+
+        </div>
         <aside class="column has-background-light">
             <div>
                 <h2 class="">
@@ -73,7 +81,7 @@
                 </h2>
                 <template v-if="allPlayers.length">
                     <ul>
-                        <li v-for="player in players" :key="player">
+                        <li v-for="player in players" :key="player.id">
                             <template v-if="player.ready">
                                 <i class="fas fa-check-circle has-text-success"></i>
                             </template>
@@ -126,7 +134,6 @@
                 client: '',
                 clients: [],
                 allPlayers: [],
-                readyPlayers: [],
                 totalPlayers: 0,
                 online: 0,
                 joined: false,
@@ -134,12 +141,17 @@
                 ready: false,
                 chat: [],
                 msg: '',
+                minPlayers: 1,
+                gameIsRunning: false,
             }
         },
         computed: {
             players() {
                 return this.clients.filter(client => client.entered === true);
-            }
+            },
+            readyPlayers() {
+                return this.players.filter(client => client.ready === true);
+            },
         },
         methods: {
             joinGame() {
@@ -150,6 +162,10 @@
                 console.log('=> sending message: ' + this.msg);
                 this.socket.emit('chat', {name: this.playerName, msg: this.msg});
                 this.msg = '';
+            },
+            startGame() {
+                console.log('=> starting game');
+                this.socket.emit('startGame', this.readyPlayers);
             },
         },
         watch: {
@@ -199,6 +215,12 @@
             this.socket.on('chat', chatObj => {
                 console.log('=> chat msg');
                 this.chat.push(chatObj);
+            });
+            this.socket.on('start', started => {
+                console.log('======> game started %s', started);
+                if (this.ready) {
+                    this.gameIsRunning = started;
+                }
             });
         },
     };

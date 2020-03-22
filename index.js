@@ -37,7 +37,7 @@ socket.broadcast.emit will send the message to all the other clients except the 
 io.on('connection', function (socket) {
     let currentClient = {
         connected: Date.now(),
-        id: Date.now(),
+        id: socket.id,
         name: '',
         ready: false,
         playing: false,
@@ -101,5 +101,13 @@ io.on('connection', function (socket) {
         console.log('= Chat msg from %s: %s', chatObj.name, chatObj.msg);
         socket.emit('chat', chatObj);
         socket.broadcast.emit('chat', chatObj);
+    });
+
+    /* === GAME LOGIC === */
+    socket.on('startGame', readyPlayers => {
+        console.log('Game started for ready players');
+        
+        socket.emit('start', true);
+        socket.broadcast.emit('start', true);
     });
 });
