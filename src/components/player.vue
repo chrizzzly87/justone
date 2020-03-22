@@ -45,7 +45,7 @@
         <aside class="column has-background-light">
             <div>
                 <h2 class="">
-                    <i class="fas fa-users"></i> Players ({{ totalPlayers }} online)
+                    <i class="fas fa-users"></i> Players ({{ online }} online, {{ totalPlayers }} in lobby)
                 </h2>
                 <template v-if="allPlayers.length">
                     <ul>
@@ -86,6 +86,7 @@
                 allPlayers: [],
                 readyPlayers: [],
                 totalPlayers: 0,
+                online: 0,
                 joined: false,
                 nameTaken: false,
                 ready: false,
@@ -124,7 +125,8 @@
                 console.log('=> callback for broadcast');
                 console.log(data);
                 this.clients = data.clients;
-                this.totalPlayers = data.clients.length;
+                this.online = this.clients.length;
+                this.totalPlayers = this.clients.filter(client => client.entered === true).length;
             });
             this.socket.on('readyPlayers', readyPlayers => {
                 console.log('=> callback for ready');
