@@ -46,7 +46,7 @@ io.on('connection', function (socket) {
         points: 0,
     };
     this.socket = currentClient;
-    clients.push(currentClient);
+    let myIndex = clients.push(currentClient);
 
     socket.emit('broadcast', {clients: clients});
 
@@ -69,12 +69,18 @@ io.on('connection', function (socket) {
         }
     });
     socket.on('ready', player => {
-        ready.push(player);
-        socket.emit('readyPlayers', ready);
+        // ready.push(player);
+        // socket.emit('readyPlayers', ready);
+        currentClient.ready = player.ready;
+        socket.emit('broadcast', {clients: clients});
+        socket.broadcast.emit('broadcast',{clients: clients});
+        if (player.ready) {
+            socket.emit('server_msg', `${currentClient.name} is ready.`);
+        }
     });
     socket.on('disconnect', function () {
         console.log(currentClient.name + ' tries to disconnect');
-        let index = clients.findIndex(client => client.id === currentClient.id);;
+        let index = clients.findIndex(client => client.id === currentClient.id);
         if (index > -1) {
             console.log('\x1b[31m%s - player disconnected \x1b[37m', currentClient.name);
             clients.splice(index,1);

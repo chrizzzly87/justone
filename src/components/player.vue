@@ -54,8 +54,14 @@
                 </h2>
                 <template v-if="allPlayers.length">
                     <ul>
-                        <li v-for="name in allPlayers" :key="name">
-                            {{ name }} <span v-if="readyPlayers.includes(name)">(ready)</span>
+                        <li v-for="player in players" :key="player">
+                            <template v-if="player.ready">
+                                <i class="fas fa-check-circle has-text-success"></i>
+                            </template>
+                            <template v-else>
+                                <i class="fas fa-circle has-text-grey-lighter"></i>
+                            </template>
+                            {{ player.name }}
                         </li>
                     </ul>
                 </template>
@@ -89,6 +95,7 @@
                 serverMessages: [],
                 data: {},
                 playerName: '',
+                client: '',
                 clients: [],
                 allPlayers: [],
                 readyPlayers: [],
@@ -97,6 +104,11 @@
                 joined: false,
                 nameTaken: false,
                 ready: false,
+            }
+        },
+        computed: {
+            players() {
+                return this.clients.filter(client => client.entered === true);
             }
         },
         methods: {
@@ -108,7 +120,7 @@
         watch: {
             ready() {
                 console.log('=> playerReady: ' + this.playerName);
-                this.socket.emit('ready', this.playerName);
+                this.socket.emit('ready', {name: this.playerName, ready: this.ready});
             },
         },
         created() {
@@ -149,11 +161,11 @@
                 });
                 this.totalPlayers = this.clients.filter(client => client.entered === true).length;
             });
-            this.socket.on('readyPlayers', readyPlayers => {
-                console.log('=> callback for ready');
-                console.log(readyPlayers);
-                this.readyPlayers = readyPlayers;
-            });
+            // this.socket.on('readyPlayers', readyPlayers => {
+            //     console.log('=> callback for ready');
+            //     console.log(readyPlayers);
+            //     this.readyPlayers = readyPlayers;
+            // });
         },
     };
 </script>
