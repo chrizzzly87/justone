@@ -161,11 +161,6 @@
                 });
                 this.totalPlayers = this.clients.filter(client => client.entered === true).length;
             });
-            // this.socket.on('readyPlayers', readyPlayers => {
-            //     console.log('=> callback for ready');
-            //     console.log(readyPlayers);
-            //     this.readyPlayers = readyPlayers;
-            // });
         },
     };
 </script>

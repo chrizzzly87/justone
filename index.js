@@ -64,6 +64,7 @@ io.on('connection', function (socket) {
             socket.emit('checkLogin',true);
 
             socket.emit('broadcast', {clients: clients});
+            socket.emit('server_msg', `${name} joined the lobby.`);
             socket.broadcast.emit('broadcast',{clients: clients});
             socket.broadcast.emit('server_msg', `${name} joined the lobby.`);
         }
@@ -76,18 +77,23 @@ io.on('connection', function (socket) {
         socket.broadcast.emit('broadcast',{clients: clients});
         if (player.ready) {
             socket.emit('server_msg', `${currentClient.name} is ready.`);
+            socket.broadcast.emit('server_msg', `${currentClient.name} is ready.`);
         }
     });
     socket.on('disconnect', function () {
         console.log(currentClient.name + ' tries to disconnect');
         let index = clients.findIndex(client => client.id === currentClient.id);
         if (index > -1) {
-            console.log('\x1b[31m%s - player disconnected \x1b[37m', currentClient.name);
+            console.log('\x1b[31m%s - client disconnected \x1b[37m', currentClient.id);
             clients.splice(index,1);
 
             socket.emit('broadcast', {clients: clients});
             socket.broadcast.emit('broadcast',{clients: clients});
-            socket.broadcast.emit('server_msg', `${currentClient.name} left the lobby.`);
+
+            if (currentClient.entered) {
+                socket.emit('server_msg', `${currentClient.name} left the lobby.`);
+                socket.broadcast.emit('server_msg', `${currentClient.name} left the lobby.`); 
+            }  
         }
     });
 });
