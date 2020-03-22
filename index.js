@@ -24,7 +24,7 @@ let players = [];
 let ready = [];
 
 // better: store all clients in global array as objects
-// client -> connected (tstamp), id (internal use), name (as given by input), ready (bool), playing (bool), idLobby ??
+// client -> connected (tstamp), id (internal use), name (as given by input), ready (bool), playing (bool), points, idLobby ??
 let clients = [];
 
 /* FAQ
@@ -36,25 +36,36 @@ socket.broadcast.emit will send the message to all the other clients except the 
 
 io.on('connection', function (socket) {
     console.log('\x1b[37msocket io connection started... Send all player info');
-    socket.emit('broadcast', {allPlayers: players});
+    let currentClient = {
+        connected: Date.now(),
+        id: Date.now(),
+        name: '',
+        ready: false,
+        playing: false,
+        entered: false,
+        points: 0,
+    };
+    this.socket = currentClient;
+    clients.push(currentClient);
 
-    socket.on('joinGame', player => {
-        console.log('\x1b[37mPlayer joining the lobby: \x1b[36m%s\x1b[37m', player);
+    socket.emit('broadcast', {clients: clients});
 
-        if (players.includes(player)) {
+    socket.on('joinGame', name => {
+        console.log('\x1b[37mPlayer joining the lobby: \x1b[36m%s\x1b[37m', name);
+        if (clients.filter(client => client.name === name).length > 0) {
             // name already taken
-            console.log('\x1b[31m%s\x1b[37m - name already taken', player);
+            console.log('\x1b[31m%s\x1b[37m - name already taken', name);
             socket.emit('checkLogin',false);
         } else {
             // new player joining
-            socket.userName = player;
-
-            players.push(player);
+            currentClient.name = name;
+            currentClient.entered = true;
+            // clients.push(player);
             socket.emit('checkLogin',true);
 
-            socket.emit('broadcast', {allPlayers: players});
-            socket.broadcast.emit('broadcast',{allPlayers: players});
-            socket.broadcast.emit('server_msg', `${player} joined the lobby.`);
+            socket.emit('broadcast', {clients: clients});
+            socket.broadcast.emit('broadcast',{clients: clients});
+            socket.broadcast.emit('server_msg', `${name} joined the lobby.`);
         }
     });
     socket.on('ready', player => {
@@ -62,15 +73,15 @@ io.on('connection', function (socket) {
         socket.emit('readyPlayers', ready);
     });
     socket.on('disconnect', function () {
-        console.log(socket.userName + ' tries to disconnect');
-        let index = players.indexOf(socket.userName);
+        console.log(currentClient.name + ' tries to disconnect');
+        let index = clients.findIndex(client => client.id === currentClient.id);;
         if (index > -1) {
-            console.log('\x1b[31m%s - player disconnected \x1b[37m', socket.userName);
-            players.splice(index,1);
+            console.log('\x1b[31m%s - player disconnected \x1b[37m', currentClient.name);
+            clients.splice(index,1);
 
-            socket.emit('broadcast', {allPlayers: players});
-            socket.broadcast.emit('broadcast',{allPlayers: players});
-            socket.broadcast.emit('server_msg', `${socket.userName} left the lobby.`);
+            socket.emit('broadcast', {clients: clients});
+            socket.broadcast.emit('broadcast',{clients: clients});
+            socket.broadcast.emit('server_msg', `${currentClient.name} left the lobby.`);
         }
     });
 });

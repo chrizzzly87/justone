@@ -27,6 +27,7 @@
   "homepage": "https://github.com/chrizzzly87/justone#readme",
   "dependencies": {
     "bulma": "^0.8.0",
+    "bulma-toast": "^1.5.4",
     "core-js": "^3.6.4",
     "express": "^4.17.1",
     "nodemon": "^2.0.2",

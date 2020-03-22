@@ -2,12 +2,11 @@
     <div class="columns">
         <div class="column is-three-quarters">
             <h1 class="title">Just One Lobby</h1>
-            <p>
-                Welcome to the online version of JustOne.<br/>
-                Please enter a username to process to the lobby!
-            </p>
-
             <div v-if="joined === false">
+                <p>
+                    Welcome to the online version of JustOne.<br/>
+                    Please enter a username to process to the lobby!
+                </p>
                 <br/>
                 <div class="field has-addons">
                     <div class="control has-icons-left ">
@@ -31,21 +30,27 @@
                 </template>
             </div> 
             <div v-else>
-                <h4>Congratulations, {{ playerName }}.</h4>
-                You successfully joined the Server. Wait for other players to start the game :)
+                <h1 class="subtitle">Congratulations, {{ playerName }}.</h1>
+                <p class="">
+                    You successfully joined the Server.<br/>
+                    Wait for other players to start the game :) <br/>
+                </p>
 
-                <div>
+                <div class="">
                     <label>
-                        <input type="checkbox" v-model="ready" :disabled="totalPlayers < 2"> Ready for some fun
+                        <input type="checkbox" v-model="ready" :disabled="totalPlayers < 2">
+                            Ready for some fun
                     </label>
-                    <p v-if="totalPlayers < 2">Waiting for at least 2 players</p>
+                </div>
+                <div class="notification" v-if="totalPlayers < 2">
+                    <p>Waiting for at least 2 players</p>
                 </div>
             </div>
         </div>
         <aside class="column has-background-light">
             <div>
                 <h2 class="">
-                    <i class="fas fa-users"></i> Players ({{ totalPlayers }} online)
+                    <i class="fas fa-users"></i> Players ({{ online }} online, {{ totalPlayers }} in lobby)
                 </h2>
                 <template v-if="allPlayers.length">
                     <ul>
@@ -71,6 +76,8 @@
 
 <script>
     import io from 'socket.io-client';
+    import { toast } from 'bulma-toast';
+
     export default {
         name: 'Player',
         props: {
@@ -82,9 +89,11 @@
                 serverMessages: [],
                 data: {},
                 playerName: '',
+                clients: [],
                 allPlayers: [],
                 readyPlayers: [],
                 totalPlayers: 0,
+                online: 0,
                 joined: false,
                 nameTaken: false,
                 ready: false,
@@ -113,6 +122,15 @@
                 this.nameTaken = !login;
                 if (login) {
                     this.joined = true;
+                    toast({
+                        message: "Hello There",
+                        type: "is-primary",
+                        position: "top-right",
+                        closeOnClick: true,
+                        dismissible: true,
+                        pauseOnHover: true,
+                        opacity: 0.8
+                    });
                 }
             });
             this.socket.on('server_msg', msg => {
@@ -122,8 +140,14 @@
             this.socket.on('broadcast', data => {
                 console.log('=> callback for broadcast');
                 console.log(data);
-                this.allPlayers = data.allPlayers; // not updating though
-                this.totalPlayers = data.allPlayers.length;
+                this.clients = data.clients;
+                this.online = this.clients.length;
+                this.allPlayers = this.clients.map(client => {
+                    if (client.entered === true) {
+                        return client.name
+                    }
+                });
+                this.totalPlayers = this.clients.filter(client => client.entered === true).length;
             });
             this.socket.on('readyPlayers', readyPlayers => {
                 console.log('=> callback for ready');
