@@ -56,6 +56,7 @@
                 serverMessages: [],
                 data: {},
                 playerName: '',
+                clients: [],
                 allPlayers: [],
                 readyPlayers: [],
                 totalPlayers: 0,
@@ -96,8 +97,8 @@
             this.socket.on('broadcast', data => {
                 console.log('=> callback for broadcast');
                 console.log(data);
-                this.allPlayers = data.allPlayers; // not updating though
-                this.totalPlayers = data.allPlayers.length;
+                this.clients = data.clients;
+                this.totalPlayers = data.clients.length;
             });
             this.socket.on('readyPlayers', readyPlayers => {
                 console.log('=> callback for ready');
