@@ -181,7 +181,7 @@
 <script>
     import io from 'socket.io-client';
     import { toast } from 'bulma-toast';
-
+    const DOMAIN = process.env.SERVER_DOMAIN || 'http://localhost:8000';
     const GAME_PHASE = [
         'idle',
         'drawCard', // active player
@@ -252,7 +252,7 @@
             },
         },
         created() {
-            this.socket = io('http://localhost:8000');
+            this.socket = io(DOMAIN);
             console.log('=== CLIENT SOCKET RUNNING ===');
         },
         mounted() {
