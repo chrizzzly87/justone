@@ -8,7 +8,31 @@
                     Please enter a username to process to the lobby!
                 </p>
                 <br/>
-                <div class="field has-addons">
+
+                <div class="buttons" v-if="this.lobby === null">
+                    <button class="button is-link" 
+                        @click="createLobby">
+                        Create a lobby
+                    </button>
+                    <button class="button is-primary" 
+                        @click="joinLobby">
+                        Join a Lobby
+                    </button>
+                </div>
+
+                <div v-else>
+                    <p>
+                        You successfully created a new lobby called {{lobby}}!
+                    </p>
+                    <p>
+                        Copy and paste the url to let other people join your game!<br/>
+                    </p>
+                    <div class="control">
+                        <input class="input" type="text" value="This text is readonly" readonly autofocus v-model="lobbyUrl">
+                    </div>
+                </div>
+
+                <!-- <div class="field has-addons">
                     <div class="control has-icons-left ">
                         <input class="input" type="text" placeholder="Enter a name" v-model="playerName" >
                         <span class="icon is-small is-left">
@@ -20,7 +44,7 @@
                             Join lobby
                         </button>
                     </div>
-                </div>
+                </div> -->
                 
 
                 <template v-if="nameTaken">
@@ -180,7 +204,9 @@
 
 <script>
     import io from 'socket.io-client';
-    import { toast } from 'bulma-toast';
+    import { DialogProgrammatic as Dialog, ToastProgrammatic as Toast } from 'buefy';
+    import 'buefy/dist/buefy.css'
+
     const DOMAIN = process.env.SERVER_DOMAIN || 'http://localhost:8000';
     const GAME_PHASE = [
         'idle',
@@ -206,6 +232,7 @@
                 client: '',
                 clients: [],
                 allPlayers: [],
+                lobby: null,
                 totalPlayers: 0,
                 online: 0,
                 joined: false,
@@ -229,6 +256,9 @@
             player() {
                 return this.clients.find(client => client.id === this.id);
             },
+            lobbyUrl() {
+                return window.location.href;
+            }
         },
         methods: {
             joinGame() {
@@ -244,6 +274,28 @@
                 console.log('=> starting game');
                 this.socket.emit('startGame', this.readyPlayers);
             },
+            joinLobby() {
+                console.log('=> join lobby');
+                Dialog.prompt({
+                    message: `What lobby do you want to join?`,
+                    inputAttrs: {
+                        type: 'string',
+                        placeholder: 'Input Lobby Name',
+                    },
+                    trapFocus: true,
+                    onConfirm: (value) => this.socket.emit('join lobby', value)
+                });
+            },
+            createLobby() {
+                console.log('=> create lobby');
+                this.socket.emit('create lobby', this.id);
+                // lobby returns a value that should change the url and be used to invite new players
+            },
+            setGamePhase(phase) {
+                if (GAME_PHASE.indexOf(phase) > -1) {
+                    this.currentPhase = GAME_PHASE.indexOf(phase);
+                }
+            }
         },
         watch: {
             ready() {
@@ -254,6 +306,14 @@
         created() {
             this.socket = io(DOMAIN);
             console.log('=== CLIENT SOCKET RUNNING ===');
+
+            let url = window.location.href; 
+            let pathname = new URL(url).pathname;
+            let pathes = pathname.split('/');
+            let lobbyIndex = pathes.indexOf('lobby');
+            if (lobbyIndex > -1 && pathes.length >= lobbyIndex + 1) {
+                this.socket.emit('join lobby', pathes[lobbyIndex + 1]);
+            }
         },
         mounted() {
             this.socket.on('checkLogin', login => {
@@ -262,15 +322,6 @@
                 this.nameTaken = !login;
                 if (login) {
                     this.joined = true;
-                    toast({
-                        message: "Hello There",
-                        type: "is-primary",
-                        position: "top-right",
-                        closeOnClick: true,
-                        dismissible: true,
-                        pauseOnHover: true,
-                        opacity: 0.8
-                    });
                 }
             });
             this.socket.on('server_msg', msg => {
@@ -296,6 +347,27 @@
             this.socket.on('chat', chatObj => {
                 console.log('=> chat msg');
                 this.chat.push(chatObj);
+            });
+            this.socket.on('lobby joined', result => {
+                console.log('=> lobby joined');
+                if (result.success) {
+                    this.lobby = result.lobby;
+                    history.pushState(null, null,`/lobby/${this.lobby}`);
+                    Toast.open({
+                        duration: 5000,
+                        message: `Welcome to the lobby! Have fun!`,
+                        position: 'is-bottom',
+                        type: 'is-dansuccessger'
+                    });
+                } else {
+                    console.error('no such lobby found');
+                    Toast.open({
+                        duration: 5000,
+                        message: `Lobby not found. Please try another name.`,
+                        position: 'is-bottom',
+                        type: 'is-danger'
+                    });
+                }
             });
             this.socket.on('start', started => {
                 console.log('======> game started %s', started);

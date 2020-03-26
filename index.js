@@ -48,6 +48,29 @@ io.on('connection', function (socket) {
     console.log('\x1b[37mNew client connected to socket. %s', currentClient.id);
     socket.emit('broadcast', {clients: clients});
     socket.broadcast.emit('broadcast', {clients: clients});
+
+
+    // lobbies
+    socket.on('create lobby', (lobby) => {
+        console.log('\x1b[37mNew Lobby will be created: \x1b[36m%s\x1b[37m', lobby);
+        socket.join(lobby);
+        socket.emit('lobby joined',{success: true, lobby: lobby, client: currentClient});
+
+    });
+
+    socket.on('join lobby', (lobby) => {
+        if (lobby in socket.rooms) {
+            console.log('\x1b[37mLobby joined: \x1b[36m%s\x1b[37m', lobby);
+            socket.join(lobby);
+            socket.emit('lobby joined',{success: true, lobby: lobby, client: currentClient});
+        } else {
+            console.log('\x1b[31mLobby not found: \x1b[36m%s\x1b[37m', lobby);
+            socket.emit('lobby joined',{success: false, client: currentClient});
+            console.log(JSON.stringify(socket.rooms));
+        }
+    });
+
+
     socket.on('joinGame', name => {
         console.log('\x1b[37mPlayer joining the lobby: \x1b[36m%s\x1b[37m', name);
         if (clients.filter(client => client.name === name).length > 0) {
